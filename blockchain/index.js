@@ -44,6 +44,7 @@ class Blockchain {
       console.error('New chain is not a valid chain.')
     } else {
       this.chain = newChain
+      console.log('Replacing blockchain with new chain.')
     }
   }
 }
