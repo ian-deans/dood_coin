@@ -1,10 +1,10 @@
 const Websocket = require('ws')
 
 const P2P_PORT = process.env.P2P_PORT || 5001
-const peers = process.env.PEERS 
+const peers = process.env.PEERS
   ? process.env.PEERS.split(',')
   : []
-  
+
 class P2pServer {
   constructor(blockchain) {
     this.blockchain = blockchain
@@ -33,14 +33,14 @@ class P2pServer {
     this.messageHandler(socket)
     this.sendChain(socket)
   }
-  
+
   messageHandler(socket) {
     socket.on('message', message => {
       const data = JSON.parse(message)
       this.blockchain.replaceChain(data)
     })
   }
-  
+
   sendChain(socket) {
     socket.send(JSON.stringify(this.blockchain.chain))
   }
