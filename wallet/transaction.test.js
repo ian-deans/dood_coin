@@ -46,9 +46,9 @@ describe('Transaction', () => {
   });
 
   describe('updating a transaction', () => {
-    
+
     let nextAmount, nextRecipient;
-    
+
     beforeEach(() => {
       nextAmount = 20;
       nextRecipient = 'n3xt-4ddr355';
