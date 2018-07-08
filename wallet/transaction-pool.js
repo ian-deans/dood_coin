@@ -26,13 +26,13 @@ class TransactionPool {
         0
       );
 
-      if (transacton.input.amount !== outputTotal) {
-        console.log(`Invalid transaction from ${transaction.input.address}.`);
+      if (transaction.input.amount !== outputTotal) {
+        console.error(`Invalid transaction from ${transaction.input.address}.`);
         return;
       }
 
       if(!Transaction.verifyTransaction(transaction)) {
-        console.log(`Invalid signature from ${transaction.input.address}.`);
+        console.error(`Invalid signature from ${transaction.input.address}.`);
         return;
       }
 
