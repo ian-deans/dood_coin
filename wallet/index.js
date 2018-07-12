@@ -43,7 +43,7 @@ class Wallet {
     let balance = this.balance;
     let transactions = [];
     blockchain.chain.forEach(block => block.data.forEach(transaction => {
-      transaction.push(transaction);
+      transactions.push(transaction);
     }));
 
     const walletInputTs = transactions.filter(
