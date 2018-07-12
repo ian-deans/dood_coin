@@ -1,3 +1,4 @@
+// require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
@@ -46,7 +47,7 @@ app.get('/transactions', (request, response) => response.json(tp.transactions));
 
 app.post('/transact', (request, response) => {
   const {recipient, amount} = request.body;
-  const transaction = wallet.createTransaction(recipient, amount, tp);
+  const transaction = wallet.createTransaction(recipient, amount, bc, tp);
   p2pServer.broadcastTransaction(transaction);
 
   response.redirect('/transactions');
