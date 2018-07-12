@@ -8,7 +8,6 @@ const Wallet = require('../wallet');
 const TransactionPool = require('../wallet/transaction-pool');
 const Miner = require('./miner');
 
-
 const HTTP_PORT = process.env.HTTP_PORT || 3001;
 
 const app = express();
@@ -21,8 +20,24 @@ const miner = new Miner(bc, tp, wallet, p2pServer);
 app.use(bodyParser.json());
 app.use(logger('dev'));
 
+app.get('/balance', (request, response) =>
+  response.json({balance: wallet.calculateBalance(bc)}))
+
 app.get('/blocks', (request, response) =>
   response.json(bc.chain));
+
+app.get('/public-key', (request, response) => {
+  response.json({publicKey: wallet.publicKey})
+});
+
+app.get('/transactions', (request, response) => response.json(tp.transactions));
+
+app.get('/mine-transactions', (request, response) => {
+  const block = miner.mine();
+  console.log(`New block added: ${block.toString()}`);
+  response.redirect('/blocks');
+})
+
 
 app.post('/mine', (request, response) => {
   const {data} = request.body;
@@ -37,14 +52,6 @@ app.post('/mine', (request, response) => {
   response.redirect('/blocks');
 })
 
-app.get('/mine-transactions', (request, response) => {
-  const block = miner.mine();
-  console.log(`New block added: ${block.toString()}`);
-  response.redirect('/blocks');
-})
-
-app.get('/transactions', (request, response) => response.json(tp.transactions));
-
 app.post('/transact', (request, response) => {
   const {recipient, amount} = request.body;
   const transaction = wallet.createTransaction(recipient, amount, bc, tp);
@@ -53,11 +60,8 @@ app.post('/transact', (request, response) => {
   response.redirect('/transactions');
 });
 
-app.get('/public-key', (request, response) => {
-  response.json({publicKey: wallet.publicKey})
-});
-
 
 app.listen(HTTP_PORT, () =>
   console.log(`Listening on port ${HTTP_PORT}`))
+
 p2pServer.listen()
