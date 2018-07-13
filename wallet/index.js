@@ -1,4 +1,4 @@
-const {INITIAL_BALANCE} = require('../config')
+const {INITIAL_BALANCE, TRANSACTION_FEE} = require('../config')
 const Transaction = require('./Transaction')
 const ChainUtil = require('../chain-util')
 
@@ -22,10 +22,18 @@ class Wallet {
 
   createTransaction(recipient, amount, blockchain, transactionPool) {
     this.balance = this.calculateBalance(blockchain);
+
     if (amount > this.balance) {
       console.log(`Amount: ${amount} exceeds the current balance: ${this.balance}`);
       return;
     }
+
+    if (amount + TRANSACTION_FEE > this.balance) {
+    console.log(`Amount: ${amount} plus transaction fee of ${TRANSACTION_FEE} exceeds the current balance: ${this.balance}`);
+      return;
+    }
+
+
 
     let transaction = transactionPool.existingTransaction(this.publicKey);
 
