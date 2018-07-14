@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./app",
     "dev": "nodemon ./app",
-    "dev2": "HTTP_PORT=3002 P2P_PORT=5002 PEERS=ws://localhost:5001 nodemon ./app",
+    "dev2": "set HTTP_PORT=3002 && set P2P_PORT=5002 && set PEERS=ws://localhost:5001 && nodemon ./app",
     "dev3": "HTTP_PORT=3003 P2P_PORT=5003 PEERS=ws://localhost:5001,ws://localhost:5002 nodemon ./app",
     "test": "jest --watchAll",
     "dev-test": "nodemon dev-test"

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <h2>Dood Coin Dashboard</h2>
+
+    <div id="dashboard">
+        <div class="public-key-container">
+            You:  <span>{{ publicKey }}</span>
+        </div>
+
+        <span class="dashboard-row">
+            <div class="balance-container">
+                Balance: <span>{{ balance }}</span>
+            </div>
+<!--         
+            <div class="peers-container">
+                Peers: <span>{{ peers }}</span>
+            </div>
+         -->
+        </span>
+        <span class="dashboard-row">
+            <button v-on:click="refreshBalance">Refresh</button>
+            <!-- <button v-on:click="connectSockets">Connect</button> -->
+        </span>
+
+
+    </div>
+    <style>
+        .dashboard-row {
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .public-key-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 400px;
+        }
+    
+    </style>
+    
+    <script>
+        
+        const dash = new Vue({
+            el: '#dashboard', 
+            data: {
+                publicKey: '',
+                balance: '',
+                webSocket: null,
+            },
+            methods: {
+                getDashboardData: function() {
+                    fetch('/dashboard-data')
+                        .then(response => response.json())
+                        .then(data => {
+                            dash.publicKey = data.publicKey;
+                            dash.balance = data.balance;
+                            console.log(`Connecting to websocket at ${data.webSocket}`)
+                            dash.connectSocket(data.webSocket);
+                            
+                        })
+                },
+                refreshBalance: function() {
+                    fetch('/balance')
+                    .then(response => response.json())
+                    .then(data => dash.balance = data.balance);
+                },
+                connectSocket: function(webSocket) {
+                    let socket = new WebSocket(webSocket);
+                    socket.onopen = function(event) {
+                        console.log('Connected to Websocket Server');
+                        socket.send(JSON.stringify({type: 'testServer', data: 'test'}))
+                    }
+                    socket.onmessage = function(message) {
+                        const data = JSON.parse(message);
+                        switch(data.type) {
+                            case 'testClient':
+                                console.log('TEST :: TEST');
+                                break;
+                        }
+                    }
+                        
+                    dash.webSocket = socket;
+                    }
+
+            }
+        });
+
+        dash.getDashboardData();
+
+    </script>
+</body>
+</html>

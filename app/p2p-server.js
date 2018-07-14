@@ -53,6 +53,10 @@ class P2pServer {
         case MESSAGE_TYPES.clear_transactions:
           this.transactionPool.clear();
           break;
+        case 'testServer':
+          console.log('TEST :: TEST');
+
+          break;
       }
 
     })
@@ -75,6 +79,8 @@ class P2pServer {
   syncChains() {
     this.sockets.forEach(socket => this.sendChain(socket))
   }
+
+  
 
   broadcastTransaction(transaction) {
     this.sockets.forEach(socket => this.sendTransaction(socket, transaction));

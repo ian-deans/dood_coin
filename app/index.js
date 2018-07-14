@@ -1,4 +1,5 @@
 // require('dotenv').config()
+const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
@@ -19,6 +20,18 @@ const miner = new Miner(bc, tp, wallet, p2pServer);
 
 app.use(bodyParser.json());
 app.use(logger('dev'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (request, response) => response.sendFile('index.html'));
+app.get('/dashboard-data', (request, response) => {
+  // balance, public key, peers public keys
+  let dashData= {
+    publicKey: wallet.publicKey,
+    balance: wallet.calculateBalance(bc),
+    webSocket: 'ws://localhost:' + (process.env.P2P_PORT || '5001'),
+  }
+  response.json(dashData)
+})
 
 app.get('/balance', (request, response) =>
   response.json({balance: wallet.calculateBalance(bc)}))
