@@ -1,100 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <title>Document</title>
 </head>
+
 <body>
     <h2>Dood Coin Dashboard</h2>
 
     <div id="dashboard">
-        <div class="public-key-container">
-            You:  <span>{{ publicKey }}</span>
+        <div class="dashboard-header">
+            <div class="public-key-container">
+                You:
+                <span c-bind:title="publicKey">Public Key</span>
+            </div>
         </div>
 
-        <span class="dashboard-row">
-            <div class="balance-container">
-                Balance: <span>{{ balance }}</span>
-            </div>
-<!--         
-            <div class="peers-container">
-                Peers: <span>{{ peers }}</span>
-            </div>
-         -->
-        </span>
-        <span class="dashboard-row">
-            <button v-on:click="refreshBalance">Refresh</button>
-            <!-- <button v-on:click="connectSockets">Connect</button> -->
-        </span>
+        <div class="dashboard-content">
+            <span class="dashboard-row">
+                <div class="balance-container">
+                    Balance:&nbsp;
+                    <span>{{ balance }}</span>
+                    <br>
+                    <button class="btn btn-info" v-on:click="refreshBalance">Refresh</button>
+                </div>
 
+
+            </span>
+            <span class="dashboard-row">
+                <button class="btn btn-info" v-on:click="viewBlocks">View Blocks</button>
+                <button class="btn btn-info" v-on:click="viewTransactions">View Transactions</button>
+                <input v-model="amountToSend">
+            </span>
+
+        </div>
+        <div class="container data-viewer">
+            <ol>
+                <li class="content-item" v-for="item in content">
+                    {{ item }}
+                </li>
+            </ol>
+        </div>
 
     </div>
     <style>
+        .content-item {
+            margin-bottom: 5px;
+        }
+
+        .data-viewer {
+            margin-top: 20px;
+            border: solid 1px black;
+            overflow: scroll;
+            height: 50%;
+        }
+
+        .dashboard {
+            width: 95vw;
+            height: 50vh;
+        }
         .dashboard-row {
             display: flex;
             justify-content: space-around;
         }
-        
+
         .public-key-container {
             display: flex;
             flex-wrap: wrap;
             max-width: 400px;
         }
-    
     </style>
-    
+
     <script>
-        
         const dash = new Vue({
-            el: '#dashboard', 
+            el: '#dashboard',
             data: {
                 publicKey: '',
                 balance: '',
                 webSocket: null,
+                content: [],
+                amountToSend: 0,
             },
             methods: {
-                getDashboardData: function() {
+                getDashboardData: function () {
                     fetch('/dashboard-data')
                         .then(response => response.json())
                         .then(data => {
                             dash.publicKey = data.publicKey;
                             dash.balance = data.balance;
-                            console.log(`Connecting to websocket at ${data.webSocket}`)
                             dash.connectSocket(data.webSocket);
-                            
                         })
                 },
-                refreshBalance: function() {
-                    fetch('/balance')
-                    .then(response => response.json())
-                    .then(data => dash.balance = data.balance);
+                viewBlocks: function() {
+                    fetch('/blocks')
+                        .then(response => response.json())
+                        .then(data => dash.content = data)
                 },
-                connectSocket: function(webSocket) {
+                viewTransactions: function() {
+                    fetch('/transactions')
+                        .then(res => res.json())
+                        .then(data => dash.content = data)
+                },
+                refreshBalance: function () {
+                    fetch('/balance')
+                        .then(response => response.json())
+                        .then(data => dash.balance = data.balance);
+                },
+                connectSocket: function (webSocket) {
                     let socket = new WebSocket(webSocket);
-                    socket.onopen = function(event) {
-                        console.log('Connected to Websocket Server');
-                        socket.send(JSON.stringify({type: 'testServer', data: 'test'}))
+                    socket.onopen = function (event) {
+                        console.log('Connection to websocket server established.');
+                        socket.send(JSON.stringify({
+                            type: 'CLIENT_CONNECTED'
+                        }))
                     }
+
                     socket.onmessage = function(message) {
-                        const data = JSON.parse(message);
+                        const {data} = message
                         switch(data.type) {
-                            case 'testClient':
-                                console.log('TEST :: TEST');
+                            case 'CHAIN':
+                            console.log('updating chain.')
+                                dash.getBlocks();
                                 break;
                         }
                     }
-                        
-                    dash.webSocket = socket;
+                    socket.onclose = function () {
+                        console.log('Connection to websocket server closed.')
                     }
+                    dash.webSocket = socket;
+                }
 
             }
         });
 
         dash.getDashboardData();
-
     </script>
 </body>
+
 </html>

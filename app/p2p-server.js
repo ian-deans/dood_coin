@@ -8,6 +8,7 @@ const MESSAGE_TYPES = {
   chain: 'CHAIN',
   transaction: 'TRANSACTION',
   clear_transactions: 'CLEAR_TRANSACTIONS',
+  client_connected: 'CLIENT_CONNECTED',
 }
 
 class P2pServer {
@@ -15,11 +16,12 @@ class P2pServer {
     this.blockchain = blockchain;
     this.transactionPool = transactionPool;
     this.sockets = [];
+    this.urls = [];
   }
 
   listen() {
     const server = new Websocket.Server({port: P2P_PORT})
-    server.on('connection', socket => this.connectSocket(socket))
+    server.on('connection', (socket, request) => this.connectSocket(socket))
     this.connectToPeers()
     console.log(`Listening for peer-to-peer connections on ${P2P_PORT}`)
   }
@@ -27,7 +29,6 @@ class P2pServer {
   connectToPeers() {
     peers.forEach(peer => {
       const socket = new Websocket(peer)
-
       socket.on('open', () => this.connectSocket(socket))
     })
   }
@@ -38,6 +39,10 @@ class P2pServer {
 
     this.messageHandler(socket)
     this.sendChain(socket)
+  }
+
+  getPeerURLs() {
+    return this.sockets.map(socket => socket.url)
   }
 
   messageHandler(socket) {
@@ -53,9 +58,8 @@ class P2pServer {
         case MESSAGE_TYPES.clear_transactions:
           this.transactionPool.clear();
           break;
-        case 'testServer':
-          console.log('TEST :: TEST');
-
+        case MESSAGE_TYPES.client_connected:
+          console.log('Dashboard client connected via websocket.');
           break;
       }
 
@@ -80,7 +84,7 @@ class P2pServer {
     this.sockets.forEach(socket => this.sendChain(socket))
   }
 
-  
+
 
   broadcastTransaction(transaction) {
     this.sockets.forEach(socket => this.sendTransaction(socket, transaction));

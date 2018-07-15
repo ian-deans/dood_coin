@@ -43,6 +43,11 @@ app.get('/public-key', (request, response) => {
   response.json({publicKey: wallet.publicKey})
 });
 
+app.get('/peer-urls', (request, response) => {
+  const urls = p2pServer.getPeerURLs()
+  response.json({data: urls})
+})
+
 app.get('/transactions', (request, response) => response.json(tp.transactions));
 
 app.get('/mine-transactions', (request, response) => {
